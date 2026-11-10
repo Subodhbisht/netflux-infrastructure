@@ -74,8 +74,8 @@ mkdir netflux && cd netflux
 git clone https://github.com/Subodhbisht/movie-service.git          movie-service
 git clone https://github.com/Subodhbisht/user-account-service.git   user-account-service
 git clone https://github.com/Subodhbisht/Recommendation-service.git recommendation-service
-git clone <netflux-frontend repo URL>       netflux-frontend
-git clone <netflux-infrastructure repo URL> netflux-infrastructure
+git clone https://github.com/Subodhbisht/netflux-frontend.git       netflux-frontend
+git clone https://github.com/Subodhbisht/netflux-frontend.git       netflux-infrastructure
 ```
 
 > Note: the recommendation repo is named `Recommendation-service` on GitHub. Clone it into lowercase `recommendation-service` as shown above.
