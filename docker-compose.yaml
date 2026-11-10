@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+  movie-service:
+    build: ../movie-service
+    image: netflux/movie-service
+    depends_on:
+    - postgres
+    environment:
+    - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/movie_db
+    - SPRING_DATASOURCE_USERNAME=movie_db_user
+    - SPRING_DATASOURCE_PASSWORD=movie_db_password
+    restart: on-failure    
+  user-service:
+    build: ../user-account-service
+    image: netflux/user-service
+    depends_on:
+    - postgres
+    environment:
+    - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/user_db
+    - SPRING_DATASOURCE_USERNAME=user_db_user
+    - SPRING_DATASOURCE_PASSWORD=user_db_password
+    - RSA_PRIVATE-KEY=file:/app/private.pem
+    volumes:
+    - "./auth/private.pem:/app/private.pem"
+    restart: on-failure
+  recommendation-service:
+    build: ../recommendation-service
+    image: netflux/recommendation-service
+    depends_on:
+    - postgres
+    environment:
+    - APP_USER-SERVICE_BASE-URL=http://user-service:8080
+    - APP_MOVIE-SERVICE_BASE-URL=http://movie-service:8080
+    restart: on-failure    
+  api-gateway:
+    image: openresty/openresty:alpine
+    depends_on:
+    - user-service
+    - movie-service
+    - recommendation-service
+    ports:
+    - "80:80"
+    volumes:
+    - "./nginx/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf"
+    - "../netflux-frontend:/usr/local/openresty/nginx/html"
+    - "./nginx/scripts/jwt.lua:/etc/nginx/validate_jwt.lua"
+    - "./auth/public.pem:/etc/nginx/certs/public.pem"      
